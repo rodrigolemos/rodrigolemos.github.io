@@ -1,6 +1,36 @@
-const [edgel, edger, edgeu, edged] = [2, 402, 55, 405];
-const [distx, disty] = [100, 95];
-const bricklines = [215, 120, 25];
+const [edgeL, edgeR, edgeU, edgeD] = [2, 402, 55, 405];
+const [stepX, stepY] = [100, 95];
+const brickRowY = [215, 120, 25];
+
+// lives, enemies, speed
+const level = {
+    1: [7, 4, 300],
+    2: [5, 6, 400],
+    3: [3, 7, 500]
+}
+
+class HUD {
+    
+    constructor() {
+        ctx.fillStyle = "Black";
+        ctx.font = "16pt Courier New";
+    }
+
+    showScore() {
+        ctx.textAlign = "left"; 
+        ctx.fillText(`Score: ${player.score}`, 10, 30); 
+    }
+
+    showLives() {
+        ctx.textAlign = "right"; 
+        ctx.fillText(`Lives: ${player.lives}`, 490, 30); 
+    }
+
+    render() {
+        this.showScore();
+        this.showLives();
+    }
+}
 
 class Character {
     constructor(x, y, sprite, speed) {
@@ -25,10 +55,14 @@ class Enemy extends Character {
     update(dt) {
         
         if ( this.hasCollided() ) {
-            player.endRound();
+            player.endRound(false);
         }
 
-        this.x = this.x + this.speed * dt;
+        if (this.x < edgeR + 100) {
+            this.x = this.x + this.speed * dt;
+        } else {
+            this.initialize();
+        }
 
     }
 
@@ -41,16 +75,20 @@ class Enemy extends Character {
         }
 
     }
+
+    initialize() {
+        this.x = -100;
+        this.speed = Math.floor(Math.random() * 500) + 200;
+    }
 }
 
 // Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
 class Player extends Character {
     
     constructor(x = 202, y = 405, sprite = 'images/char-boy.png') {
         super(x, y, sprite);
-        this.score = 0;        
+        this.score = 0;
+        this.lives = 3;
     }
 
     update() {
@@ -61,17 +99,17 @@ class Player extends Character {
 
         switch (key) {
             case 'left':
-                this.x = (this.x > edgel) ? this.x - distx : this.x;
+                this.x = (this.x > edgeL) ? this.x - stepX : this.x;
                 break;
             case 'right':
-                this.x = (this.x < edger) ? this.x + distx : this.x;
+                this.x = (this.x < edgeR) ? this.x + stepX : this.x;
                 break;
             case 'down':
-                this.y = (this.y < edged) ? this.y + disty : this.y;
+                this.y = (this.y < edgeD) ? this.y + stepY : this.y;
                 break;
             case 'up':
-                if (this.y > edgeu) {
-                    this.y = this.y - disty;
+                if (this.y > edgeU) {
+                    this.y = this.y - stepY;
                 } else {
                     this.endRound(true);
                 }                
@@ -80,20 +118,33 @@ class Player extends Character {
 
     }
 
-    endRound(resultRound = false) {
+    endRound(win = false) {
+        
         this.x = 202;
         this.y = 405;
-        this.score = (resultRound) ? this.score++ : this.score;
+
+        if (win) {
+            this.score++;
+        } else {
+            this.lives--;
+        }
+
     }
 
 }
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
-let allEnemies = [new Enemy(-100, 215, 'images/enemy-bug.png', 55) ];
+let allEnemies = [
+    new Enemy(-100, brickRowY[0], 'images/enemy-bug.png', 100),
+    new Enemy(-100, brickRowY[1], 'images/enemy-bug.png', 100),
+    new Enemy(-100, brickRowY[2], 'images/enemy-bug.png', 100)
+];
 
+// Place the player object in a variable called player
 let player = new Player();
+
+let hud = new HUD();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
