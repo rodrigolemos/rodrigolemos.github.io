@@ -1,19 +1,27 @@
+// Defining table boundaries in order to avoid a step
+// outside the field
 const [edgeL, edgeR, edgeU, edgeD] = [2, 402, 55, 405];
+
+// Defining step size
 const [stepX, stepY] = [100, 95];
+
+// Defining Y-axis of the bricks
 const brickRowY = [215, 120, 25];
 
-// lives, enemies, speed
+// Setting the levels
+// level: lives, enemies, maximum speed
 const level = {
     1: [7, 4, 300],
     2: [5, 6, 400],
     3: [3, 7, 500]
 }
 
+
 class HUD {
     
     constructor() {
         ctx.fillStyle = "Black";
-        ctx.font = "16pt Courier New";
+        ctx.font = "18pt Courier New";
     }
 
     showScore() {
@@ -26,9 +34,17 @@ class HUD {
         ctx.fillText(`Lives: ${player.lives}`, 490, 30); 
     }
 
+    showGameOver() {
+        if (player.lives < 1) {            
+            ctx.drawImage(Resources.get('images/game-over.jpg'), 0, 50, 505, 596);
+            player.reset();
+        }
+    }
+
     render() {
         this.showScore();
         this.showLives();
+        this.showGameOver();
     }
 }
 
@@ -38,13 +54,13 @@ class Character {
         this.y = y;
         this.sprite = sprite;
         this.speed = speed;
-        this.crash = false;
     }    
     render() {
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
     }
 }
 
+// Enemies our player must avoid
 class Enemy extends Character {
     
     constructor(x, y, sprite, speed) {
@@ -52,6 +68,8 @@ class Enemy extends Character {
         this.hsize = 80;
     }
     
+    // Update the enemy's position, required method for game
+    // Parameter: dt, a time delta between ticks
     update(dt) {
         
         if ( this.hasCollided() ) {
@@ -61,7 +79,7 @@ class Enemy extends Character {
         if (this.x < edgeR + 100) {
             this.x = this.x + this.speed * dt;
         } else {
-            this.initialize();
+            this.reset();
         }
 
     }
@@ -76,13 +94,15 @@ class Enemy extends Character {
 
     }
 
-    initialize() {
+    reset() {
         this.x = -100;
-        this.speed = Math.floor(Math.random() * 500) + 200;
+        this.speed = Math.floor(Math.random() * 400) + 200;
     }
 }
 
 // Now write your own player class
+// This class requires an update(), render() and
+// a handleInput() method.
 class Player extends Character {
     
     constructor(x = 202, y = 405, sprite = 'images/char-boy.png') {
@@ -131,17 +151,21 @@ class Player extends Character {
 
     }
 
+    reset() {
+
+    }
+
 }
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
+// Place the player object in a variable called player
 let allEnemies = [
-    new Enemy(-100, brickRowY[0], 'images/enemy-bug.png', 100),
-    new Enemy(-100, brickRowY[1], 'images/enemy-bug.png', 100),
-    new Enemy(-100, brickRowY[2], 'images/enemy-bug.png', 100)
+    new Enemy(-100, brickRowY[0], 'images/enemy-bug.png', 200),
+    new Enemy(-100, brickRowY[1], 'images/enemy-bug.png', 230),
+    new Enemy(-100, brickRowY[2], 'images/enemy-bug.png', 180)
 ];
 
-// Place the player object in a variable called player
 let player = new Player();
 
 let hud = new HUD();
