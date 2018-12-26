@@ -1,19 +1,18 @@
 # Classic Arcade Game Clone Project
 
-## Table of Contents
-
-- [Instructions](#instructions)
-- [Contributing](#contributing)
-
 ## Instructions
 
 ## How to run
 
+Clone or download the repository:
+```
+https://github.com/rodrigolemos/nanodegree-project-1
+```
+and open the index.html file. All the software will be loaded and you will be able to play.
+
 ## How to play
+
 Using the arrow keys, you have to take your player to the water avoiding touching the enemies. It's just the basic concept of the classic game, but with some additional content:
-The longer you stand in the brick, more points you score but these points are only counted if you reach the water.
-
-## Contributing
-
-This repository is the starter code for _all_ Udacity students. Therefore, we most likely will not accept pull requests.
-# nanodegree-project-1
+* The longer you stand in the brick, more points you score but these points are only counted as score if you reach the water.
+* You don't see it, but if you return your point counter will be reseted and when you reach the other side you won't score as much as you think. So, don't go back.
+* If you score a 1000 points you'll win a trophy, but won't be stopped until you lose all your lives. So keep playing and try to be the best!
