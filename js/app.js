@@ -11,72 +11,12 @@ const [stepX, stepY] = [100, 95];
 const brickRowY = [215, 120, 25];
 
 /**
- * Sets the levels
- * level: lives, enemies, maximum speed, points
- */
-const level = {
-    1: [7, 4, 300, 100],
-    2: [5, 6, 400, 150],
-    3: [3, 7, 500, 350]
-}
-
-/**
-* @description HUD (heads-up display) Handles on-screen information
-* @constructor
-*/
-class HUD {
-
-    constructor() {
-        ctx.fillStyle = "Black";
-        ctx.font = "18pt Courier New";
-    }
-
-    showScore() {
-        ctx.textAlign = "left";
-        ctx.fillText(`Score: ${player.score}`, 10, 30);
-    }
-
-    showLevel() {
-        ctx.textAlign = "center";
-        ctx.fillText(`Level: ${player.level}`, 255, 30);
-    }
-
-    showLives() {
-        ctx.textAlign = "right";
-        ctx.fillText(`Lives: ${player.lives}`, 490, 30);
-    }
-
-    showGameOver() {
-        if (player.hasLost) {
-
-            ctx.drawImage(Resources.get('images/game-over.png'), 0, 50, 505, 550);
-            ctx.textAlign = "center";
-
-            /*
-            ctx.fillStyle = "White";
-            ctx.font = "13pt Courier New";
-            */
-
-            ctx.fillText(`Thanks for playing!`, 255, 200);
-            ctx.fillText(`Press enter to try again!`, 255, 455);
-        }
-    }
-
-    render() {
-        this.showScore();
-        this.showLevel();
-        this.showLives();
-        this.showGameOver();
-    }
-}
-
-/**
 * @description Represents a character
 * @constructor
 * @param {number} x - The value of x-axis
 * @param {number} y - The value of y-axis
 * @param {string} sprite - The character image
-* @param {number} author - The character speed
+* @param {number} speed - The character speed
 */
 class Character {
     constructor(x, y, sprite, speed) {
@@ -84,6 +24,7 @@ class Character {
         this.y = y;
         this.sprite = sprite;
         this.speed = speed;
+        this.hsize = 80;
     }
     render() {
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
@@ -97,7 +38,6 @@ class Enemy extends Character {
 
     constructor(x, y, sprite, speed) {
         super(x, y, sprite, speed);
-        this.hsize = 80;
     }
 
     // Update the enemy's position, required method for game
@@ -131,7 +71,7 @@ class Enemy extends Character {
     // and outside the field
     reset() {
         this.x = edgeL - this.hsize;
-        this.speed = Math.floor(Math.random() * 400) + 200;
+        this.speed = Math.floor(Math.random() * 450) + 150;
     }
 
 }
@@ -144,13 +84,22 @@ class Player extends Character {
     constructor(x = 202, y = 405, sprite = 'images/char-boy.png') {
         super(x, y, sprite);
         this.hasLost = false;
+        this.hasWon = false;
         this.level = 1;
-        this.lives = 3;
+        this.lives = 5;
         this.score = 0;
+        this.points = 0;
+        this.roundsWon = 0;
     }
 
     update() {
-        // ...
+        // Player scores points if is in 'danger zone'
+        // but only effective them when finish the round
+        if (brickRowY.includes(this.y)) {
+            this.points++;
+        } else {
+            this.points = 0;
+        }
     }
 
     handleInput(key) {
@@ -174,6 +123,8 @@ class Player extends Character {
                     break;
                 case 'down':
                     this.y = (this.y < edgeD) ? this.y + stepY : this.y;
+                    // Decreases score if player returns (even in the 'danger zone')
+                    this.points = 0;
                     break;
                 case 'up':
                     if (this.y > edgeU) {
@@ -188,32 +139,96 @@ class Player extends Character {
 
     }
 
-    // Ends the round and according to the parameter
-    // sums the score or removes a life
+    /**
+     * Ends the round and according to the parameter
+     * sums the points to the final score or removes a life
+     */
     endRound(win = false) {
 
         this.x = 202;
         this.y = 405;
 
         if (win) {
-            // TODO: increaseLevel
-            this.score++;
+
+            this.score += this.points;
+
+            if (this.score >= 1000) {
+                this.hasWon = true;
+            }
+
         } else {
+
             this.lives--;
             if (this.lives < 1) {
                 this.hasLost = true;
             }
+
         }
 
     }
 
     resetGame() {
         this.hasLost = false;
+        this.hasWon = false;
         this.level = 1;
-        this.lives = 3;
+        this.lives = 5;
         this.score = 0;
+        this.points = 0;
     }
 
+}
+
+/**
+* @description HUD (heads-up display) Handles on-screen information
+*/
+class HUD {
+
+    constructor() {
+    }
+
+    showScore() {
+        ctx.font = "16pt monospace";
+        ctx.fillStyle = "#EEE";
+        ctx.textAlign = "left";
+        ctx.fillText(`Score: ${player.score}`, 10, 30);
+    }
+
+    showLives() {
+        ctx.font = "16pt monospace";
+        ctx.fillStyle = "#EEE";
+        ctx.textAlign = "right";
+        ctx.fillText(`Lives: ${player.lives}`, 490, 30);
+    }
+
+    showGameOver() {
+
+        ctx.textAlign = "center";
+
+        if (player.hasLost) {
+
+            ctx.drawImage(Resources.get('images/game-over.png'), 0, 50, 505, 550);
+            ctx.font = "16pt monospace";
+            ctx.fillStyle = "#EEE";
+            ctx.fillText(`Thanks for playing!`, 255, 215);
+            ctx.fillText(`Press enter to try again!`, 255, 450);
+
+        }
+
+
+    }
+
+    showWin() {
+        if (player.hasWon) {
+            ctx.drawImage(Resources.get('images/you-win.png'), 220, -10, 70, 70);
+        }
+    }
+
+    render() {
+        this.showScore();
+        this.showLives();
+        this.showGameOver();
+        this.showWin();
+    }
 }
 
 let hud = new HUD();
@@ -222,9 +237,9 @@ let hud = new HUD();
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 let allEnemies = [
-    new Enemy(-100, brickRowY[0], 'images/enemy-bug.png', 150),
-    new Enemy(-100, brickRowY[1], 'images/enemy-bug.png', 230),
-    new Enemy(-100, brickRowY[2], 'images/enemy-bug.png', 190)
+    new Enemy(-100, brickRowY[0], 'images/enemy-bug.png', 170),
+    new Enemy(-100, brickRowY[1], 'images/enemy-bug.png', 240),
+    new Enemy(-100, brickRowY[2], 'images/enemy-bug.png', 210)
 ];
 
 let player = new Player();
