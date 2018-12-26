@@ -44,7 +44,7 @@ class Enemy extends Character {
     // Parameter: dt, a time delta between ticks
     update(dt) {
 
-        if ( this.hasCollided() ) {
+        if (this.hasCollided()) {
             player.endRound(false);
         }
 
@@ -61,7 +61,7 @@ class Enemy extends Character {
 
         let [enemyx, enemyy, playerx, playery] = [this.x, this.y, player.x, player.y];
 
-        if ( ( playerx <= enemyx + this.hsize && playerx >= enemyx - this.hsize ) && enemyy == playery ) {
+        if ((playerx <= enemyx + this.hsize && playerx >= enemyx - this.hsize) && enemyy == playery) {
             return true;
         }
 
@@ -83,6 +83,7 @@ class Player extends Character {
 
     constructor(x = 202, y = 405, sprite = 'images/char-boy.png') {
         super(x, y, sprite);
+        this.readInstructions = false;
         this.hasLost = false;
         this.hasWon = false;
         this.level = 1;
@@ -104,35 +105,45 @@ class Player extends Character {
 
     handleInput(key) {
 
-        // Allows restart only if player has lost
-        if (this.hasLost) {
+        if (this.readInstructions) {
 
-            if (key == 'enter') {
-                this.resetGame();
+            // Allows restart only if player has lost
+            if (this.hasLost) {
+
+                if (key == 'enter') {
+                    this.resetGame();
+                }
+
+            } else {
+
+                // Allows movement if the player is within the limits
+                switch (key) {
+                    case 'left':
+                        this.x = (this.x > edgeL) ? this.x - stepX : this.x;
+                        break;
+                    case 'right':
+                        this.x = (this.x < edgeR) ? this.x + stepX : this.x;
+                        break;
+                    case 'down':
+                        this.y = (this.y < edgeD) ? this.y + stepY : this.y;
+                        // Decreases score if player returns (even in the 'danger zone')
+                        this.points = 0;
+                        break;
+                    case 'up':
+                        if (this.y > edgeU) {
+                            this.y = this.y - stepY;
+                        } else {
+                            this.endRound(true);
+                        }
+                        break;
+                }
+
             }
 
         } else {
 
-            // Allows movement if the player is within the limits
-            switch (key) {
-                case 'left':
-                    this.x = (this.x > edgeL) ? this.x - stepX : this.x;
-                    break;
-                case 'right':
-                    this.x = (this.x < edgeR) ? this.x + stepX : this.x;
-                    break;
-                case 'down':
-                    this.y = (this.y < edgeD) ? this.y + stepY : this.y;
-                    // Decreases score if player returns (even in the 'danger zone')
-                    this.points = 0;
-                    break;
-                case 'up':
-                    if (this.y > edgeU) {
-                        this.y = this.y - stepY;
-                    } else {
-                        this.endRound(true);
-                    }
-                    break;
+            if (key == 'enter') {
+                this.readInstructions = true;
             }
 
         }
@@ -186,11 +197,54 @@ class HUD {
     constructor() {
     }
 
+    showInstructions() {
+        if (player.readInstructions === false) {
+
+            ctx.globalAlpha = 0.85;
+            ctx.fillStyle = "beige";
+            ctx.fillRect(0, 50, 505, 535);
+
+            ctx.font = "14pt Fredoka One";
+            ctx.fillStyle = "darkred";
+            ctx.fillText(`Hi there, stranger! How you doin?`, 255, 130);
+
+            ctx.textAlign = "center";
+            ctx.font = "11pt Fredoka One";
+            ctx.fillText(`It's been too hot lately, so I'm thinking about diving into this river.`, 255, 170);
+            ctx.fillText(`Can you help me?`, 255, 190);
+
+            ctx.fillText(`Using the arrow keys, please take me to the water`, 255, 230);
+            ctx.fillText(`avoiding these annoying and giant bugs.`, 255, 250);
+
+            ctx.fillText(`I LIKE ADRENALINE!`, 255, 290);
+            ctx.font = "10pt Fredoka One";
+
+            ctx.fillText(`The longer I stand in the brick zone, more points I score, but remember:`, 255, 310);
+            ctx.fillText(`THESE POINTS ARE ONLY COUNTED IF I REACH THE WATER!`, 255, 330);
+
+            ctx.font = "11pt Fredoka One";
+            ctx.fillText(`I LIKE CHALLENGES!`, 255, 370);
+
+            ctx.font = "10pt Fredoka One";
+            ctx.fillText(`When I score 1000 points I magically win a trophy!`, 255, 390);
+            ctx.fillText(`(don't ask me how)`, 255, 410);
+
+            ctx.font = "14pt Fredoka One";
+            ctx.fillText(`That's it! Press enter and help me!`, 255, 460);
+
+            ctx.globalAlpha = 1.0;
+        }
+    }
+
     showScore() {
         ctx.font = "16pt monospace";
         ctx.fillStyle = "#EEE";
         ctx.textAlign = "left";
         ctx.fillText(`Score: ${player.score}`, 10, 30);
+        if (player.points > 0) {
+            ctx.font = "10pt monospace";
+            ctx.fillText(`Points: ${player.points}`, 150, 30);
+        }
     }
 
     showLives() {
@@ -224,6 +278,7 @@ class HUD {
     }
 
     render() {
+        this.showInstructions();
         this.showScore();
         this.showLives();
         this.showGameOver();
@@ -246,7 +301,7 @@ let player = new Player();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keyup', function(e) {
+document.addEventListener('keyup', function (e) {
 
     var allowedKeys = {
         37: 'left',
