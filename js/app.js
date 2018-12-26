@@ -109,8 +109,8 @@ class Player extends Character {
         // Player scores points if is in the brick row ('danger zone')
         // but only effective them finishing the round
         if (brickRowY.includes(this.y)) {
-            // Setting up a limit of two levels per round
-            if (this.points < scoreToLevelUp * 2) {
+            // Setting up a limit per round
+            if (this.points < scoreToLevelUp) {
                 this.points++;
             }
         } else {
