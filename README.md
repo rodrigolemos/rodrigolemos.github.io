@@ -2,7 +2,7 @@
 
 Project requested by Udacity as a form of graduation in the Nanodegree Front-End Web Developer.
 
-# Basic Functionality
+## Basic Functionality
 
 In this game you have a Player and Enemies (Bugs). The goal of the player is to reach the water, without colliding into any one of the enemies. The player can move left, right, up and down. The enemies move in varying speeds on the paved block portion of the scene. Once a the player collides with an enemy, the game is reset and the player moves back to the start square. Once the player reaches the water the game is won.
 
@@ -21,6 +21,6 @@ Using the arrow keys, you have to take your player to the water avoiding touchin
 * You don't see it, but if you return your point counter will be reseted and when you reach the other side you won't score as much as you think. So, don't go back.
 * If you score a 1000 points you'll win a trophy, but won't be stopped until you lose all your lives. So keep playing and try to be the best!
 
-# Author
+## Author
 
 Rodrigo Lemos
