@@ -52,7 +52,7 @@ class HUD {
     ctx.fillText(`Score: ${player.score}`, 10, 30);
     if (player.points > 0) {
       ctx.font = "10pt monospace";
-      ctx.fillText(`(${player.points})`, 147, 30);
+      ctx.fillText(`(${player.points})`, 149, 30);
     }
   }
 
