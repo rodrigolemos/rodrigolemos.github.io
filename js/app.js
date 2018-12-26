@@ -14,7 +14,7 @@ const brickRowY = [310, 215, 120, 25];
  * Defines the score to win a trophy and the score to increase
  * player level
  */
-const [scoreToWin, scoreToLevelUp] = [1000, 400];
+const [scoreToWin, scoreToLevelUp] = [1000, 250];
 
 /**
 * @description Represents a character
@@ -79,8 +79,8 @@ class Enemy extends Character {
     // and outside the field
     reset() {
 
-        let minSpeed = (player.level * 75);
-        let maxSpeed = minSpeed + 100;
+        let minSpeed = (player.level * 60);
+        let maxSpeed = minSpeed + 75;
 
         this.x = edgeL - 120;
         this.speed = Math.floor(Math.random() * maxSpeed) + minSpeed;
