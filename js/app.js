@@ -8,7 +8,13 @@ const [edgeL, edgeR, edgeU, edgeD] = [2, 402, 55, 405];
 const [stepX, stepY] = [100, 95];
 
 // Defines Y-axis of the bricks
-const brickRowY = [215, 120, 25];
+const brickRowY = [310, 215, 120, 25];
+
+/**
+ * Defines the score to win a trophy and the score to increase
+ * player level
+ */
+const [scoreToWin, scoreToLevelUp] = [1000, 400];
 
 /**
 * @description Represents a character
@@ -44,10 +50,12 @@ class Enemy extends Character {
     // Parameter: dt, a time delta between ticks
     update(dt) {
 
+        // If enemy collides, player loses round
         if (this.hasCollided()) {
             player.endRound(false);
         }
 
+        // Resets enemy position if out of boundaries
         if (this.x < edgeR + 100) {
             this.x = this.x + this.speed * dt;
         } else {
@@ -70,8 +78,13 @@ class Enemy extends Character {
     // Initializes the enemy with a random speed
     // and outside the field
     reset() {
-        this.x = edgeL - this.hsize;
-        this.speed = Math.floor(Math.random() * 450) + 150;
+
+        let minSpeed = (player.level * 100);
+        let maxSpeed = minSpeed + 100;
+
+        this.x = edgeL - 120;
+        this.speed = Math.floor(Math.random() * maxSpeed) + minSpeed;
+
     }
 
 }
@@ -90,14 +103,16 @@ class Player extends Character {
         this.lives = 5;
         this.score = 0;
         this.points = 0;
-        this.roundsWon = 0;
     }
 
     update() {
-        // Player scores points if is in 'danger zone'
-        // but only effective them when finish the round
+        // Player scores points if is in the brick row ('danger zone')
+        // but only effective them finishing the round
         if (brickRowY.includes(this.y)) {
-            this.points++;
+            // Setting up a limit of two levels per round
+            if (this.points < scoreToLevelUp * 2) {
+                this.points++;
+            }
         } else {
             this.points = 0;
         }
@@ -126,13 +141,12 @@ class Player extends Character {
                         break;
                     case 'down':
                         this.y = (this.y < edgeD) ? this.y + stepY : this.y;
-                        // Decreases score if player returns (even in the 'danger zone')
-                        this.points = 0;
                         break;
                     case 'up':
                         if (this.y > edgeU) {
                             this.y = this.y - stepY;
                         } else {
+                            // If player reaches the water
                             this.endRound(true);
                         }
                         break;
@@ -151,11 +165,13 @@ class Player extends Character {
     }
 
     /**
-     * Ends the round and according to the parameter
-     * sums the points to the final score or removes a life
+     * Ends the round and according to the parameter,
+     * sums the points to the final score and manipulate the level
+     * or removes a life
      */
     endRound(win = false) {
 
+        // Initial position
         this.x = 202;
         this.y = 405;
 
@@ -163,9 +179,11 @@ class Player extends Character {
 
             this.score += this.points;
 
-            if (this.score >= 1000) {
+            if (this.score >= scoreToWin) {
                 this.hasWon = true;
             }
+
+            this.updateLevel();
 
         } else {
 
@@ -176,6 +194,17 @@ class Player extends Character {
 
         }
 
+    }
+
+    /**
+     * Calculates how many levels the player has increased according to his score.
+     * If the player has scored points enough to increase two or more levels in a single round
+     * this method will handle that.
+     */
+    updateLevel() {
+        if (this.score >= this.level * scoreToLevelUp) {
+            this.level = Math.floor(this.score / scoreToLevelUp) + 1;
+        }
     }
 
     resetGame() {
@@ -189,112 +218,16 @@ class Player extends Character {
 
 }
 
-/**
-* @description HUD (heads-up display) Handles on-screen information
-*/
-class HUD {
-
-    constructor() {
-    }
-
-    showInstructions() {
-        if (player.readInstructions === false) {
-
-            ctx.globalAlpha = 0.85;
-            ctx.fillStyle = "beige";
-            ctx.fillRect(0, 50, 505, 535);
-
-            ctx.font = "14pt Fredoka One";
-            ctx.fillStyle = "darkred";
-            ctx.fillText(`Hi there, stranger! How you doin?`, 255, 130);
-
-            ctx.textAlign = "center";
-            ctx.font = "11pt Fredoka One";
-            ctx.fillText(`It's been too hot lately, so I'm thinking about diving into this river.`, 255, 170);
-            ctx.fillText(`Can you help me?`, 255, 190);
-
-            ctx.fillText(`Using the arrow keys, please take me to the water`, 255, 230);
-            ctx.fillText(`avoiding these annoying and giant bugs.`, 255, 250);
-
-            ctx.fillText(`I LIKE ADRENALINE!`, 255, 290);
-            ctx.font = "10pt Fredoka One";
-
-            ctx.fillText(`The longer I stand in the brick zone, more points I score, but remember:`, 255, 310);
-            ctx.fillText(`THESE POINTS ARE ONLY COUNTED IF I REACH THE WATER!`, 255, 330);
-
-            ctx.font = "11pt Fredoka One";
-            ctx.fillText(`I LIKE CHALLENGES!`, 255, 370);
-
-            ctx.font = "10pt Fredoka One";
-            ctx.fillText(`When I score 1000 points I magically win a trophy!`, 255, 390);
-            ctx.fillText(`(don't ask me how)`, 255, 410);
-
-            ctx.font = "14pt Fredoka One";
-            ctx.fillText(`That's it! Press enter and help me!`, 255, 460);
-
-            ctx.globalAlpha = 1.0;
-        }
-    }
-
-    showScore() {
-        ctx.font = "16pt monospace";
-        ctx.fillStyle = "#EEE";
-        ctx.textAlign = "left";
-        ctx.fillText(`Score: ${player.score}`, 10, 30);
-        if (player.points > 0) {
-            ctx.font = "10pt monospace";
-            ctx.fillText(`Points: ${player.points}`, 150, 30);
-        }
-    }
-
-    showLives() {
-        ctx.font = "16pt monospace";
-        ctx.fillStyle = "#EEE";
-        ctx.textAlign = "right";
-        ctx.fillText(`Lives: ${player.lives}`, 490, 30);
-    }
-
-    showGameOver() {
-
-        ctx.textAlign = "center";
-
-        if (player.hasLost) {
-
-            ctx.drawImage(Resources.get('images/game-over.png'), 0, 50, 505, 550);
-            ctx.font = "16pt monospace";
-            ctx.fillStyle = "#EEE";
-            ctx.fillText(`Thanks for playing!`, 255, 215);
-            ctx.fillText(`Press enter to try again!`, 255, 450);
-
-        }
-
-
-    }
-
-    showWin() {
-        if (player.hasWon) {
-            ctx.drawImage(Resources.get('images/you-win.png'), 220, -10, 70, 70);
-        }
-    }
-
-    render() {
-        this.showInstructions();
-        this.showScore();
-        this.showLives();
-        this.showGameOver();
-        this.showWin();
-    }
-}
-
 let hud = new HUD();
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 let allEnemies = [
-    new Enemy(-100, brickRowY[0], 'images/enemy-bug.png', 170),
-    new Enemy(-100, brickRowY[1], 'images/enemy-bug.png', 240),
-    new Enemy(-100, brickRowY[2], 'images/enemy-bug.png', 210)
+    new Enemy(-120, brickRowY[0], 'images/enemy-bug.png', 90),
+    new Enemy(-120, brickRowY[1], 'images/enemy-bug.png', 160),
+    new Enemy(-120, brickRowY[2], 'images/enemy-bug.png', 120),
+    new Enemy(-120, brickRowY[3], 'images/enemy-bug.png', 100)
 ];
 
 let player = new Player();
