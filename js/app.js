@@ -79,7 +79,7 @@ class Enemy extends Character {
     // and outside the field
     reset() {
 
-        let minSpeed = (player.level * 100);
+        let minSpeed = (player.level * 75);
         let maxSpeed = minSpeed + 100;
 
         this.x = edgeL - 120;
