@@ -3,6 +3,6 @@ body {
     background-image: linear-gradient(to bottom, orange, red);
     background-repeat:no-repeat;
     background-size: 100%;
-    min-height: 1050px;
+    min-height: 2000px;
     overflow-y: hidden;
 }
